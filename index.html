@@ -29,14 +29,14 @@
     <div id="start-screen">
         <h2 style="color: var(--main); margin-bottom: 10px;">工作項目 04：冷媒系統處理</h2>
         <div class="rule-box">
-            <strong>📝 測驗規則：</strong><br>
-            1. 系統隨機抽出 10 題。<br>
-            2. 答對給分 = 10 分 + 剩餘秒數獎勵。<br>
-            3. 成績將自動送至雲端表單。
+            <strong>📝 系統說明：</strong><br>
+            1. 題庫已連結：項目 04 專用。<br>
+            2. 自動提交：成績將送至 Google 表單。<br>
+            3. 排行榜：顯示全班前五名高分。
         </div>
-        <p>請選擇座號：</p>
+        <p>選擇座號：</p>
         <select id="player-no"></select>
-        <button id="start-btn" onclick="initGame()" disabled>正在連線題庫...</button>
+        <button id="start-btn" onclick="initGame()" disabled>連線中...</button>
         <div id="debug-log">系統狀態：初始化中...</div>
     </div>
 
@@ -60,22 +60,22 @@
         <h1 id="final-score" style="font-size: 3em; color: var(--main); margin: 10px 0;">0</h1>
         <div id="rank-box" style="margin-top:15px; text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; font-size: 0.9em;">
             <div style="text-align:center; font-weight:bold; color: #555; margin-bottom: 8px;">🏆 項目 04 即時排行榜</div>
-            <div id="rank-content">載入中...</div>
+            <div id="rank-content">排行榜載入中...</div>
         </div>
         <button onclick="location.reload()" style="margin-top:20px; padding:10px 25px; border-radius:20px; border:none; background:var(--main); color:white; cursor:pointer;">重新測驗</button>
     </div>
 </div>
 
 <script>
-    // --- 配置區 ---
+    // --- 重要配置 ---
     const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCNHZ8u0345ZpgQJHZnqOxHHStz9S35BF3emJOzHV7yuIL0G55PPvz_i_fhAm4bu0iSTGCvbyzrr7T/pub?output=csv";
     const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfNjoG2yqKNIdi5HDRfN9rss1KiMKWsJcQU_kOBGmAbmib8CA/formResponse";
+    const RANK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFfKdDclmlrhFyAwjs7ck_rq4MTKxi6Ndf7TBeZoNcJD9O7zDlQ3_yuL7Y7Ii896p5TNxTRuIttP8R/pub?output=csv";
+    
     const ID_NO = "entry.380705505";
     const ID_SCORE = "entry.330260248";
-    const RANK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFfKdDclmlrhFyAwjs7ck_rq4MTKxi6Ndf7TBeZoNcJD9O7zDlQ3_yuL7Y7Ii896p5TNxTRuIttP8R/pub?output=csv";
 
-    let allQuestions = [];
-    let gameQuestions = [];
+    let allQuestions = [], gameQuestions = [];
     let currentIdx = 0, score = 0, timer, timeLeft = 30, currentCorrectValue = 0;
 
     function log(txt) { 
@@ -92,9 +92,9 @@
 
     async function loadData() {
         try {
-            log("嘗試讀取題庫...");
-            const res = await fetch(`${SHEET_CSV}?t=${Date.now()}`);
-            if (!res.ok) throw new Error("HTTP " + res.status);
+            log("連線題庫中...");
+            const res = await fetch(`${SHEET_CSV}&t=${Date.now()}`);
+            if (!res.ok) throw new Error("連線失敗");
             const text = await res.text();
             
             const lines = text.split(/\r?\n/);
@@ -110,12 +110,10 @@
                 allQuestions = temp;
                 document.getElementById('start-btn').disabled = false;
                 document.getElementById('start-btn').innerText = "開始測驗";
-                log("✅ 題庫讀取成功！共 " + allQuestions.length + " 題。");
-            } else {
-                log("❌ 解析失敗：請檢查 CSV 格式");
+                log("✅ 成功！已讀取 " + allQuestions.length + " 題。");
             }
         } catch (e) {
-            log("❌ 連線錯誤：" + e.message + "。請確認試算表已『發佈到網路』並選擇 CSV 格式。");
+            log("❌ 讀取失敗，請確認網路或試算表狀態。");
         }
     }
 
@@ -132,7 +130,6 @@
         document.getElementById('q-count').innerText = `${currentIdx+1} / 10`;
         document.getElementById('q-text').innerText = (currentIdx+1) + ". " + data.q;
         currentCorrectValue = data.a;
-
         const btns = document.querySelectorAll('.opt-btn');
         btns.forEach((btn, i) => {
             btn.innerText = "(" + (i + 1) + ") " + data.opts[i];
@@ -148,7 +145,7 @@
         timer = setInterval(() => {
             timeLeft -= 0.1;
             document.getElementById('timer-fill').style.width = (timeLeft / 30) * 100 + "%";
-            if (timeLeft <= 0) { clearInterval(timer); handleAnswer(-1); }
+            if (timeLeft <= 0) handleAnswer(-1);
         }, 100);
     }
 
@@ -172,13 +169,12 @@
         document.getElementById('end-screen').classList.remove('hidden');
         document.getElementById('final-score').innerText = score;
 
-        // 使用 Image 物件提交，這是目前最穩定的自動提交方法
-        const submitUrl = `${FORM_URL}?${ID_NO}=${sel.value}&${ID_SCORE}=${score}&submit=Submit`;
+        const finalUrl = `${FORM_URL}?${ID_NO}=${sel.value}&${ID_SCORE}=${score}&submit=Submit`;
         const img = new Image();
-        img.src = submitUrl;
+        img.src = finalUrl;
         
-        log("成績已送出至項目 04 表單。");
-        loadRank();
+        log("成績已提交。");
+        setTimeout(loadRank, 2000);
     }
 
     async function loadRank() {
