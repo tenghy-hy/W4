@@ -8,21 +8,15 @@
         :root { --main: #0984e3; --bg: #f0f2f5; --win: #00b894; --lose: #d63031; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         #game-box { background: white; width: 95%; max-width: 450px; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        
-        /* 計時條樣式 */
         #timer-bg { width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin: 15px 0; }
         #timer-fill { width: 100%; height: 100%; background: #ff7675; transition: width 0.1s linear; }
-        
         .q-text { font-size: 1.15em; font-weight: bold; margin-bottom: 20px; min-height: 60px; color: #2d3436; text-align: left; line-height: 1.4; }
         .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         .opt-btn { padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; cursor: pointer; font-size: 1.05em; text-align: left; outline: none; transition: 0.2s; }
         .correct { background: var(--win) !important; color: white; border-color: var(--win); }
         .wrong { background: var(--lose) !important; color: white; border-color: var(--lose); }
         .hidden { display: none; }
-        
-        /* 規則區樣式 */
         .rule-box { background: #fff9db; border: 1px solid #ffe066; padding: 12px; border-radius: 10px; text-align: left; font-size: 0.9em; margin-bottom: 20px; color: #665c33; }
-        
         select#player-no { width: 100%; padding: 10px; font-size: 1.1em; border-radius: 8px; border: 2px solid var(--main); margin-bottom: 20px; }
         button#start-btn { padding: 12px 35px; font-size: 1.2em; background: var(--main); color: white; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; }
         button#start-btn:disabled { background: #ccc; cursor: not-allowed; }
@@ -34,19 +28,16 @@
 <div id="game-box">
     <div id="start-screen">
         <h2 style="color: var(--main); margin-bottom: 10px;">工作項目 04：冷媒系統處理</h2>
-        
         <div class="rule-box">
-            <strong>📝 計分規則說明：</strong><br>
-            1. 每次測驗將隨機抽取 <strong>10 題</strong>。<br>
-            2. 每題作答時間為 <strong>30 秒</strong>。<br>
-            3. 答對分數 = 基礎 10 分 + 剩餘秒數獎勵。<br>
-            4. 答錯或逾時不給分。
+            <strong>📝 測驗說明：</strong><br>
+            1. 隨機抽選 10 題，每題 30 秒。<br>
+            2. 成績將自動同步至項目 04 試算表。<br>
+            3. 請務必確認座號選擇正確。
         </div>
-
-        <p>請選擇座號開始測驗：</p>
+        <p>請選擇座號：</p>
         <select id="player-no"></select>
-        <button id="start-btn" onclick="initGame()" disabled>系統連線中...</button>
-        <div id="debug-log">系統狀態：初始化...</div>
+        <button id="start-btn" onclick="initGame()" disabled>連線中...</button>
+        <div id="debug-log">系統初始化中...</div>
     </div>
 
     <div id="quiz-area" class="hidden">
@@ -66,10 +57,10 @@
 
     <div id="end-screen" class="hidden">
         <h3>測驗完成</h3>
-        <p>工作項目 04：冷媒系統處理</p>
+        <p>工作項目 04 分數</p>
         <h1 id="final-score" style="font-size: 3em; color: var(--main); margin: 10px 0;">0</h1>
         <div id="rank-box" style="margin-top:15px; text-align:left; background:#f9f9f9; padding:15px; border-radius:10px; font-size: 0.9em;">
-            <div style="text-align:center; font-weight:bold; color: #555; margin-bottom: 8px;">🏆 全班前五名排行榜</div>
+            <div style="text-align:center; font-weight:bold; color: #555; margin-bottom: 8px;">🏆 本項目班級排行榜</div>
             <div id="rank-content">載入中...</div>
         </div>
         <button onclick="location.reload()" style="margin-top:20px; padding:10px 25px; border-radius:20px; border:none; background:var(--main); color:white; cursor:pointer;">重新測驗</button>
@@ -77,18 +68,20 @@
 </div>
 
 <script>
-    // --- 配置資料更新 ---
-    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCNHZ8u0345ZpgQJHZnqOxHHStz9S35BF3emJOzHV7yuIL0G55PPvz_i_fhAm4bu0iSTGCvbyzrr7T/pub?output=csv";
-    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScOCC3XH910Aj2izzG6Un-9P0y5g8KlbrCDxd1-LvsT1uSRow/formResponse";
+    // --- 項目 04 資料配置區 ---
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfNjoG2yqKNIdi5HDRfN9rss1KiMKWsJcQU_kOBGmAbmib8CA/formResponse";
     const ID_NO = "entry.380705505";
     const ID_SCORE = "entry.330260248";
+    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCNHZ8u0345ZpgQJHZnqOxHHStz9S35BF3emJOzHV7yuIL0G55PPvz_i_fhAm4bu0iSTGCvbyzrr7T/pub?output=csv";
     const RANK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFfKdDclmlrhFyAwjs7ck_rq4MTKxi6Ndf7TBeZoNcJD9O7zDlQ3_yuL7Y7Ii896p5TNxTRuIttP8R/pub?output=csv";
 
-    let allQuestions = [];
-    let gameQuestions = [];
+    let allQuestions = [], gameQuestions = [];
     let currentIdx = 0, score = 0, timer, timeLeft = 30, currentCorrectValue = 0;
 
-    function log(txt) { document.getElementById('debug-log').innerHTML += "<br>> " + txt; }
+    function log(txt) { 
+        const lb = document.getElementById('debug-log');
+        lb.innerHTML += "<br>> " + txt; lb.scrollTop = lb.scrollHeight;
+    }
 
     const sel = document.getElementById('player-no');
     for(let i=1; i<=36; i++){
@@ -98,36 +91,26 @@
 
     async function loadData() {
         try {
-            const fetchUrl = SHEET_CSV.includes('?') ? `${SHEET_CSV}&t=${Date.now()}` : `${SHEET_CSV}?t=${Date.now()}`;
-            const res = await fetch(fetchUrl);
-            if (!res.ok) throw new Error("連線失敗 (HTTP " + res.status + ")");
+            const res = await fetch(`${SHEET_CSV}?t=${Date.now()}`);
             const text = await res.text();
-            
             const lines = text.split(/\r?\n/);
             const temp = [];
             lines.forEach((line) => {
-                // CSV 解析邏輯
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
                 if (cols.length >= 6 && ['1','2','3','4'].includes(cols[1])) {
                     temp.push({ q: cols[0], opts: [cols[2], cols[3], cols[4], cols[5]], a: parseInt(cols[1]) });
                 }
             });
-
-            if (temp.length === 0) {
-                log("警告：讀取成功但解析題目為 0。請確認 CSV 格式是否正確。");
-            } else {
+            if (temp.length > 0) {
                 allQuestions = temp;
                 document.getElementById('start-btn').disabled = false;
                 document.getElementById('start-btn').innerText = "開始測驗";
-                log("系統就緒！工作項目 04 共 " + allQuestions.length + " 題。");
+                log("題庫讀取成功，共 " + allQuestions.length + " 題。");
             }
-        } catch (e) {
-            log("連線出錯：" + e.message);
-        }
+        } catch (e) { log("載入出錯：" + e.message); }
     }
 
     function initGame() {
-        if(!sel.value) return;
         gameQuestions = [...allQuestions].sort(() => Math.random() - 0.5).slice(0, 10);
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('quiz-area').classList.remove('hidden');
@@ -140,7 +123,6 @@
         document.getElementById('q-count').innerText = `${currentIdx+1} / 10`;
         document.getElementById('q-text').innerText = (currentIdx+1) + ". " + data.q;
         currentCorrectValue = data.a;
-
         const btns = document.querySelectorAll('.opt-btn');
         btns.forEach((btn, i) => {
             btn.innerText = "(" + (i + 1) + ") " + data.opts[i];
@@ -151,13 +133,11 @@
     }
 
     function startTimer() {
-        timeLeft = 30;
-        clearInterval(timer);
+        timeLeft = 30; clearInterval(timer);
         timer = setInterval(() => {
-            timeLeft -= 0.1; 
-            let percent = (timeLeft / 30) * 100;
-            document.getElementById('timer-fill').style.width = percent + "%";
-            if (timeLeft <= 0) { clearInterval(timer); handleAnswer(-1); }
+            timeLeft -= 0.1;
+            document.getElementById('timer-fill').style.width = (timeLeft / 30) * 100 + "%";
+            if (timeLeft <= 0) handleAnswer(-1);
         }, 100);
     }
 
@@ -165,7 +145,6 @@
         clearInterval(timer);
         const btns = document.querySelectorAll('.opt-btn');
         btns.forEach(b => b.disabled = true);
-
         if (val === currentCorrectValue) {
             btns[val-1].classList.add('correct');
             score += 10 + Math.floor(timeLeft);
@@ -181,16 +160,20 @@
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('end-screen').classList.remove('hidden');
         document.getElementById('final-score').innerText = score;
+
+        // 成績提交邏輯
+        const finalUrl = `${FORM_URL}?${ID_NO}=${sel.value}&${ID_SCORE}=${score}&submit=Submit`;
+        const img = new Image();
+        img.src = finalUrl;
         
-        // 提交成績到 Google Form
-        fetch(`${FORM_URL}?${ID_NO}=${encodeURIComponent(sel.value)}&${ID_SCORE}=${score}&submit=Submit`, { mode: 'no-cors' });
+        log("成績已送出至新表單，請稍後查看排行榜。");
         loadRank();
     }
 
     async function loadRank() {
         const content = document.getElementById('rank-content');
         try {
-            const res = await fetch(RANK_CSV + (RANK_CSV.includes('?') ? '&' : '?') + "t=" + Date.now());
+            const res = await fetch(`${RANK_CSV}?t=${Date.now()}`);
             const text = await res.text();
             const lines = text.split(/\r?\n/).slice(1);
             let data = lines.map(line => {
@@ -202,7 +185,7 @@
                 <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom: 1px dashed #ddd;">
                     <span>${i+1}. ${it.n} 號</span>
                     <span>${it.s} 分</span>
-                </div>`).join('') || "尚無資料";
+                </div>`).join('') || "目前尚無排名";
         } catch (e) { content.innerText = "排行榜同步中..."; }
     }
 
